@@ -38,8 +38,8 @@ def find_package_data():
     return package_data
 
 
-README = open(os.path.join(HERE, 'README.txt')).read()
-CHANGES = open(os.path.join(HERE, 'CHANGES.txt')).read()
+README = open(os.path.join(HERE, 'README.rst')).read()
+CHANGES = open(os.path.join(HERE, 'CHANGES.rst')).read()
 
 setup(
     name='pcelery',
