@@ -20,15 +20,15 @@ VERSION=`python version.py -u ${VERSION}`
 
 if [ -z "$VERSION" ]
 then
-    echo ERROR: File CHANGES.txt not changed!
+    echo ERROR: File CHANGES.rst not changed!
     exit 1
 fi
 
 NOT_COMMITED=`git status --untracked-files=no --porcelain`
 if [ "$NOT_COMMITED" ]
 then
-    echo Commit updated CHANGES.txt for version ${VERSION}
-    git add CHANGES.txt
+    echo Commit updated CHANGES.rst for version ${VERSION}
+    git add CHANGES.rst
     git commit -m "Create release"
     echo Push changes to repository
     git push
