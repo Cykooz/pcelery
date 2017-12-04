@@ -2,6 +2,8 @@
 set -e
 
 NOT_COMMITED=`git status --untracked-files=no --porcelain`
+TWINE_REPOSITORY='mountbit'
+
 if [ "$NOT_COMMITED" ]
 then
     echo ERROR: You have not commited changes!
@@ -39,7 +41,7 @@ fi
 echo Make release
 rm -rf dist
 ../bin/python setup.py sdist bdist_wheel
-../twine upload dist/*
+TWINE_REPOSITORY=${TWINE_REPOSITORY} ../twine upload dist/*
 rm -rf dist
 rm -rf build
 
