@@ -14,6 +14,15 @@
 CHANGELOG
 *********
 
+Next release
+============
+
+Bug Fixes
+---------
+
+- Fixed task decorator for correct creation of new celery queues using
+  ``add_celery_queues_factory`` directive.
+
 0.1 (2017-12-04)
 ================
 

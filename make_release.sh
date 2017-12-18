@@ -41,7 +41,7 @@ fi
 echo Make release
 rm -rf dist
 ../bin/python setup.py sdist bdist_wheel
-TWINE_REPOSITORY=${TWINE_REPOSITORY} ../twine upload dist/*
+TWINE_REPOSITORY=${TWINE_REPOSITORY} ../bin/twine upload dist/*
 rm -rf dist
 rm -rf build
 

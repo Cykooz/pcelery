@@ -58,14 +58,18 @@ def task(*args, **kwargs):
     def _inner(func):
         proxy = TaskProxy(func)
 
-        def register(scanner, name, task_proxy):
+        def callback(scanner, name, task_proxy):
             config = scanner.config
-            registry = config.registry
-            celery = get_celery(registry)
-            celery_task = celery.task(task_proxy.original_func, *args, **kwargs)
-            proxy.bind_celery_task(celery_task)
 
-        venusian.attach(proxy, register, category='celery')
+            def register():
+                registry = config.registry
+                celery = get_celery(registry)
+                celery_task = celery.task(task_proxy.original_func, *args, **kwargs)
+                proxy.bind_celery_task(celery_task)
+
+            config.action('bind_celery_task - %s' % name, register)
+
+        venusian.attach(proxy, callback, category='celery')
         return proxy
 
     return _inner

@@ -64,6 +64,7 @@ setup(
     ],
     keywords='',
     author='Kirill Kuzminykh',
+    author_email='cykooz@gmail.com',
     url='https://github.com/Cykooz/pcelery',
     package_dir={'': '.'},
     packages=find_packages(),
