@@ -14,6 +14,19 @@
 CHANGELOG
 *********
 
+Next release
+============
+
+Features
+--------
+
+- Added tasks router by value of task ``routing_key`` only.
+
+Docs
+----
+
+- Added documentation section with description of ``Celery`` configuration.
+
 0.1.2 (2017-12-19)
 ==================
 

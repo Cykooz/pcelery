@@ -3,6 +3,42 @@ pcelery
 
 This module implements integration of ``Celery`` with ``Pyramid`` framework.
 
+Configuration
+=============
+
+To configure ``Celery`` application you MUST use method ``set_celery_config()``
+of ``Pyramid Configurator``.
+
+*backend/celery/__init__.py*
+
+    .. code-block:: python
+
+        def includeme(config):
+            config.include('pcelery')
+
+            from kombu.entity import Exchange, Queue
+
+            default_exchange = Exchange('backend.default', type='direct')
+            celery_config = {
+                'app_name': 'backend',
+                'broker_url': 'amqp://user:pswd@localhost:5672/backend',
+                'accept_content': ['json', 'msgpack', 'yaml'],
+                'result_backend': '',
+                'task_serializer': 'json',
+                'task_ignore_result': True,
+                'task_acks_late': True,
+                'task_default_exchange': 'backend.default',
+                'task_default_routing_key': 'middle_priority',
+                'task_default_queue': 'backend.middle',
+                'task_queues': [
+                    Queue('backend.high', default_exchange, routing_key='high_priority'),
+                    Queue('backend.middle', default_exchange, routing_key='middle_priority'),
+                    Queue('backend.low', default_exchange, routing_key='low_priority'),
+                ]
+            }
+            config.set_celery_config(celery_config)
+            config.scan()
+
 Task
 ====
 
@@ -13,17 +49,17 @@ up and register tasks in the current celery application.
 
 Example:
 
-*package/__init__.py*
+*backend/users/__init__.py*
 
     .. code-block:: python
 
         def includeme(config):
-            config.include('pcelery')
+            config.include('backend.celery')
 
             config.scan()
 
 
-*package/tasks.py*
+*backend/users/tasks.py*
 
     .. code-block:: python
 
@@ -31,10 +67,12 @@ Example:
 
 
         @task(bind=True, ignore_result=True, routing_key='high_priority')
-        def do_my_work(self, arg1, kwarg2=None):
+        def update_user_status(self, arg1, kwarg2=None):
             pass
 
 Inside of task you could retrieve pyramid request and registry through task instance:
+
+*backend/users/tasks.py*
 
     .. code-block:: python
 
@@ -42,7 +80,7 @@ Inside of task you could retrieve pyramid request and registry through task inst
 
 
         @task(bind=True)
-        def do_my_work(self, arg1, kwarg2=None):
+        def update_user_status(self, arg1, kwarg2=None):
             request = self.pyramid_request
             with request.tm:
                utility = self.pyramid_registry.getUtility(IMyUtility)
@@ -53,36 +91,28 @@ Inside of task you could retrieve pyramid request and registry through task inst
 Queues
 ======
 
-This module provides special directive for pyramid configurator -
-``add_celery_queues_factory``. With helps of this directive you may
-add custom queues to ``Celery`` settings.
+This package provides special directive for ``Pyramid Configurator`` -
+``add_celery_queues_factory``. With helps of this directive you may register
+custom queues not only from application that setup ``Celery`` configuration.
 
-Examples:
+*backend/users/__init__.py*
 
     .. code-block:: python
 
         from kombu import Exchange, Queue
 
 
-        default_exchange = Exchange('default', type='direct')
-
-
         def includeme(config):
-            config.include('pcelery')
+            config.include('backend.celery')
 
-            config.add_celery_queues_factory(create_my_app_queues)
-            config.add_celery_queues_factory(create_custom_queues, name='my_custom_queues')
+            config.add_celery_queues_factory(create_users_queues)
             config.scan(ignore=scan_ignore())
 
 
-        def create_my_app_queues(registry):
-            exchange = Exchange('my_app', type='direct')
-            queue = Queue('my_app.high', exchange, routing_key='high_priority')
-            return [queue]
-
-
-        def create_custom_queues(registry):
+        def create_users_queues(registry):
+            exchange = Exchange('users_exchange', type='direct')
             return [
-                Queue('default.contacts', default_exchange, routing_key='contacts'),
-                Queue('default.photos', default_exchange, routing_key='photos'),
+                Queue('users.high', exchange, routing_key='high_priority'),
+                Queue('users.low', exchange, routing_key='low_priority'),
             ]
+
