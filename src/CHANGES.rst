@@ -14,6 +14,19 @@
 CHANGELOG
 *********
 
+Next release
+============
+
+Features
+--------
+
+- Added support of ``celery>=4.2``.
+
+Backward incompatible changes
+-----------------------------
+
+- Dropped support of ``celery<4.2``.
+
 0.2 (2018-08-03)
 ================
 

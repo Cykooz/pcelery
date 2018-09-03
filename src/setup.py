@@ -77,7 +77,7 @@ setup(
     },
     install_requires=[
         'setuptools',
-        'celery>=4.1.0',
+        'celery>=4.2.0',
         'pyramid>=1.8.3',
         'venusian',
         'six',

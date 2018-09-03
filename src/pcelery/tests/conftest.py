@@ -9,7 +9,7 @@ from pyramid.config import Configurator
 from pyramid.interfaces import IRequestFactory, IRootFactory
 from pyramid.request import Request, apply_request_extensions
 from pyramid.scripting import prepare
-from pyramid.threadlocal import manager
+from pyramid.threadlocal import RequestContext
 from pyramid.traversal import DefaultRootFactory
 
 
@@ -46,8 +46,11 @@ def app_config_fixture():
         yield config
 
 
-@pytest.fixture(name='request')
-def request_fixture(app_config):
+@pytest.fixture(name='pyramid_request')
+def pyramid_request_fixture(app_config):
+    """
+    :rtype: pyramid.request.Request
+    """
     registry = app_config.registry
     request_factory = registry.queryUtility(IRequestFactory, default=Request)
     request = request_factory.blank('http://localhost')
@@ -59,10 +62,8 @@ def request_fixture(app_config):
     if hasattr(root, 'set_request'):
         root.set_request(request)
     request.root = root
-    manager.push({
-        'registry': registry,
-        'request': request
-    })
+    context = RequestContext(request)
+    context.begin()
     yield request
     request._process_finished_callbacks()
-    manager.pop()
+    context.end()

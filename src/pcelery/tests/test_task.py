@@ -20,14 +20,11 @@ def first_task(self, request_id):
 
 
 @pytest.mark.now
-def test_celery(request):
-    """
-    :type request: pyramid.request.Request
-    """
+def test_celery(pyramid_request):
     cur_request_id = id(get_current_request())
-    assert cur_request_id == id(request)
+    assert cur_request_id == id(pyramid_request)
 
-    tasks_queue = TasksQueue(request.registry)
+    tasks_queue = TasksQueue(pyramid_request.registry)
     first_task.delay(cur_request_id)
     assert tasks_queue.get_count_by_name(first_task.name) == 1
     tasks_queue.run_all_tasks()

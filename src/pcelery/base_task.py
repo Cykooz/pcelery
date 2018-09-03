@@ -5,11 +5,11 @@
 """
 import six
 from celery import Task as BaseTask
-from celery.app import push_current_task, pop_current_task
+from celery.app import pop_current_task, push_current_task
 from celery.signals import before_task_publish
+from pyramid.interfaces import IRequestFactory, IRootFactory
 from pyramid.request import Request, apply_request_extensions
-from pyramid.threadlocal import manager, get_current_request
-from pyramid.interfaces import IRootFactory, IRequestFactory
+from pyramid.threadlocal import RequestContext, get_current_request
 from pyramid.traversal import DefaultRootFactory
 
 
@@ -25,9 +25,6 @@ class PyramidCeleryTask(BaseTask):
         try:
             request = get_current_request()  # TODO: fix it - replace to explicitly passed keyword argument
             self.request.pyramid_request = request
-            # add self if this is a bound task
-            if self.__self__ is not None:
-                return self.run(self.__self__, *args, **kwargs)
             return self.run(*args, **kwargs)
         finally:
             del self.request.pyramid_request
@@ -41,22 +38,16 @@ class PyramidCeleryTask(BaseTask):
         # This method in BaseTask called only if a task called directly.
         # Celery do not run this method if it is not customized in the sub-class.
         # So we not need to emulate base version of this method if it is not called directly.
-        manager.push({
-            'registry': self.pyramid_registry,
-            'request': self.pyramid_request
-        })
+        context = RequestContext(self.pyramid_request)
+        context.begin()
         try:
             return self._wrapped_run(*args, **kwargs)
         finally:
-            if self.pyramid_request:
-                self.pyramid_request._process_finished_callbacks()
-            manager.pop()
+            context.request._process_finished_callbacks()
+            context.end()
 
     def _wrapped_run(self, *args, **kwargs):
         """This method may be overridden in child class"""
-        # add self if this is a bound task
-        if self.__self__ is not None:
-            return self.run(self.__self__, *args, **kwargs)
         return self.run(*args, **kwargs)
 
     @property

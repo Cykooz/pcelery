@@ -85,8 +85,8 @@ Inside of task you could retrieve pyramid request and registry through task inst
             with request.tm:
                utility = self.pyramid_registry.getUtility(IMyUtility)
                utility.save_result(request.db_session)
-            # Or you could retrieve registry directly from request
-            # request.registry.getUtility(IMyUtility)
+            # Or you could retrieve registry directly from request:
+            # utility = request.registry.getUtility(IMyUtility)
 
 Queues
 ======
