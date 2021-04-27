@@ -41,11 +41,12 @@ import subprocess
 import sys
 from distutils.version import StrictVersion
 
-__author__ = ('Douglas Creager',
-              'Michal Nazarewicz',
-              'Kirill Kuzminykh')
+__author__ = ('Douglas Creager <dcreager@dcreager.net>',
+              'Michal Nazarewicz <mina86@mina86.com>',
+              'Kirill Kuzminykh <cykooz@gmail.com')
 __license__ = 'This file is placed into the public domain.'
 __maintainer__ = 'Kirill Kuzminykh'
+__email__ = 'cykooz@gmail.com'
 
 __all__ = ('get_version',)
 
@@ -138,30 +139,36 @@ def main():
                              'and current date. You can use "auto" as version number for generate '
                              'version number automatically')
     args = parser.parse_args()
-    if not args.version:
+    args_version = (args.version or '').strip()
+    if not args_version:
         print(get_version())
         return
 
-    version, commits = get_version_for_new_release()
-    if commits == 0:
-        print(version)
-        return
+    try:
+        version, commits = get_version_for_new_release()
+        if commits == 0:
+            print(version)
+            return
+    except ValueError:
+        if args_version == 'auto':
+            raise
+        version = args_version
 
     with open(CHANGES_FILE, 'rt') as f:
-        changes = f.read().decode('utf-8')
+        changes = f.read()
     find = 'Next release\n============\n'
     if find in changes:
-        if args.version == 'auto':
+        if args_version == 'auto':
             # Increase the patch number to account for the additional commit.
             version.version = (version.version[0], version.version[1], version.version[2] + 1)
         else:
-            version = StrictVersion(args.version)
+            version = StrictVersion(args_version)
         replace = '%s (%s)' % (version, datetime.date.today().strftime('%Y-%m-%d'))
         replace = '%s\n%s\n' % (replace, '=' * len(replace))
         new_changes = changes.replace(find, replace)
         if new_changes != changes:
-            with open(CHANGES_FILE, 'w') as f:
-                f.write(new_changes.encode('utf-8'))
+            with open(CHANGES_FILE, 'wt') as f:
+                f.write(new_changes)
             print(version)
 
 
