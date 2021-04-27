@@ -3,7 +3,7 @@
 :Authors: cykooz
 :Date: 19.05.2017
 """
-from zope.interface.interface import Interface
+from zope.interface import Interface
 
 
 class ICeleryQueuesFactory(Interface):

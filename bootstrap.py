@@ -66,7 +66,7 @@ parser.add_option("--allow-site-packages",
 parser.add_option("--buildout-version",
                   help="Use a specific zc.buildout version")
 parser.add_option("--setuptools-version",
-                  help="Use a specific setuptools version", default='36.6.0')
+                  help="Use a specific setuptools version", default='39.0.0')
 parser.add_option("--setuptools-to-dir",
                   help=("Allow for re-use of existing directory of "
                         "setuptools versions"))

@@ -3,11 +3,13 @@
 :Authors: cykooz
 :Date: 14.11.2016
 """
-import six
+from typing import Optional
+
 from celery import Task as BaseTask
 from celery.app import pop_current_task, push_current_task
 from celery.signals import before_task_publish
 from pyramid.interfaces import IRequestFactory, IRootFactory
+from pyramid.registry import Registry
 from pyramid.request import Request, apply_request_extensions
 from pyramid.threadlocal import RequestContext, get_current_request
 from pyramid.traversal import DefaultRootFactory
@@ -51,10 +53,7 @@ class PyramidCeleryTask(BaseTask):
         return self.run(*args, **kwargs)
 
     @property
-    def pyramid_registry(self):
-        """
-        :rtype: pyramid.registry.Registry
-        """
+    def pyramid_registry(self) -> Optional[Registry]:
         app = self.app
         if app:
             return app.pyramid_registry
@@ -93,8 +92,11 @@ def serialize_request(request):
     :type request: pyramid.request.Request
     :rtype: dict
     """
-    env = {key: value for key, value in request.environ.items()
-           if key.isupper()}
+    env = {
+        key: value
+        for key, value in request.environ.items()
+        if key.isupper()
+    }
     if 'CONTENT_LENGTH' in env:
         env['CONTENT_LENGTH'] = '0'
     data = {
@@ -114,9 +116,6 @@ def deserialize_request(data, registry, default_url='http://localhost'):
     if data:
         url = data['REQUEST_URL']
         env = data['REQUEST_ENV']
-        if six.PY2:
-            url = _force_utf8(url)
-            env = _force_dict_utf8(env)
     else:
         url = default_url
         env = None
@@ -125,16 +124,3 @@ def deserialize_request(data, registry, default_url='http://localhost'):
     request.registry = registry
     apply_request_extensions(request)
     return request
-
-
-def _force_utf8(v):
-    if isinstance(v, six.text_type):
-        return v.encode('utf-8')
-    return v
-
-
-def _force_dict_utf8(d):
-    values = []
-    for k, v in six.iteritems(d):
-        values.append((_force_utf8(k), _force_utf8(v)))
-    return dict(values)

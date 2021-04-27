@@ -2,6 +2,7 @@
 import os
 import sys
 
+
 HERE = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(HERE)
 
@@ -50,11 +51,10 @@ setup(
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',
         'Framework :: Pyramid',
@@ -77,16 +77,18 @@ setup(
     },
     install_requires=[
         'setuptools',
-        'celery>=4.2.0',
+        'celery>=5.0.5',
         'pyramid>=1.8.3',
         'venusian',
-        'six',
+        'kombu',
     ],
     entry_points={
-        'console_scripts':
-            [
-                'pcelery = pcelery.commands:pcelery',
-                'pcelery_test = pcelery.runtests:runtests [test]',
-            ],
+        'paste.app_factory': [
+            'main = pcelery.tests.conftest:simple_app [test]',
+        ],
+        'console_scripts': [
+            'pcelery = pcelery.commands:pcelery',
+            'pcelery_test = pcelery.runtests:runtests [test]',
+        ],
     },
 )

@@ -14,6 +14,20 @@
 CHANGELOG
 *********
 
+Next release
+============
+
+Features
+--------
+
+- Added support of ``celery>=5.0``.
+
+Backward incompatible changes
+-----------------------------
+
+- Dropped support of ``celery<5.0``.
+- Dropped support of ``Python<3.6``.
+
 0.3 (2018-09-03)
 ================
 

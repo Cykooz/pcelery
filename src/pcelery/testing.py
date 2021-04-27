@@ -45,7 +45,7 @@ class TasksQueue(object):
     def __len__(self):
         return len(list(self.task_names))
 
-    def __getitem__(self, key):
+    def __getitem__(self, key) -> Message:
         if not self._channel:
             raise KeyError(key)
         queue = [m for m in self.queue if m['headers']['task'] not in self.disabled_tasks]
