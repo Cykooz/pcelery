@@ -8,6 +8,7 @@ from contextlib import contextmanager
 from io import StringIO
 from pathlib import Path
 
+import pytest
 from pyramid.threadlocal import get_current_request
 
 from .. import task
@@ -61,4 +62,4 @@ def test_cli_command():
     sys.argv.extend(old_argv)
 
     assert exc_info.value.args[0] == 0
-    assert std_out.getvalue().strip() == '5.0.5 (singularity)'
+    assert std_out.getvalue().strip() == '5.1.2 (sun-harmonics)'

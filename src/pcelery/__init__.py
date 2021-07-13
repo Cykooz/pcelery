@@ -69,7 +69,7 @@ def task(*args, **kwargs):
 
             config.action('bind_celery_task - %s' % name, register)
 
-        venusian.attach(proxy, callback, category='celery')
+        venusian.attach(proxy, callback, category='pyramid')
         return proxy
 
     return _inner

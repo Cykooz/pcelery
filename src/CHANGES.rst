@@ -14,6 +14,14 @@
 CHANGELOG
 *********
 
+Next release
+============
+
+Bug Fixes
+---------
+
+- Fixed task registration for Pyramid >= 2.0.
+
 0.4 (2021-04-27)
 ================
 
