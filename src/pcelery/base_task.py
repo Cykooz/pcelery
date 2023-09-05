@@ -59,10 +59,7 @@ class PyramidCeleryTask(BaseTask):
             return app.pyramid_registry
 
     @property
-    def pyramid_request(self):
-        """
-        :rtype: pyramid.request.Request
-        """
+    def pyramid_request(self) -> Request:
         request = getattr(self.request, 'pyramid_request', None)
         if not request:
             extra = getattr(self.request, EXTRA_PARAMS_NAME, {})
@@ -71,7 +68,10 @@ class PyramidCeleryTask(BaseTask):
             self.request.pyramid_request = request
         if not hasattr(request, 'root'):
             # It is not real worker, most likely it is testing environment
-            root_factory = self.pyramid_registry.queryUtility(IRootFactory, default=DefaultRootFactory)
+            root_factory = self.pyramid_registry.queryUtility(
+                IRootFactory,
+                default=DefaultRootFactory
+            )
             request.root = root_factory(request)
         return request
 
@@ -87,11 +87,7 @@ def add_params_to_task(sender=None, body=None, **kwargs):
         embed[EXTRA_PARAMS_NAME] = extra
 
 
-def serialize_request(request):
-    """
-    :type request: pyramid.request.Request
-    :rtype: dict
-    """
+def serialize_request(request: Request) -> dict:
     env = {
         key: value
         for key, value in request.environ.items()
@@ -106,13 +102,11 @@ def serialize_request(request):
     return data
 
 
-def deserialize_request(data, registry, default_url='http://localhost'):
-    """
-    :type data: dict
-    :type registry: pyramid.registry.Registry
-    :type default_url: str
-    :rtype: pyramid.request.Request
-    """
+def deserialize_request(
+        data: dict,
+        registry: Registry,
+        default_url='http://localhost'
+) -> Request:
     if data:
         url = data['REQUEST_URL']
         env = data['REQUEST_ENV']

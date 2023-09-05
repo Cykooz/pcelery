@@ -14,6 +14,14 @@
 CHANGELOG
 *********
 
+Next release
+============
+
+Features
+--------
+
+- Added support of ``celery`` >= 5.3 in testing utilities.
+
 0.4.2 (2021-07-13)
 ==================
 

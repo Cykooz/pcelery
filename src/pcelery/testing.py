@@ -4,21 +4,24 @@
 :Date: 19.03.2017
 """
 from collections import deque
+from typing import Optional
 
+from billiard.einfo import ExceptionInfo
 from celery.worker.request import Request
-from kombu.transport.virtual import Message
 from kombu.transport.memory import Channel
+from kombu.transport.virtual import Message
+from pyramid.registry import Registry
 
 
-class TasksQueue(object):
+class TasksQueue:
 
-    def __init__(self, registry, queue_name='pcelery.default', clear=True, disabled_tasks=None):
-        """
-        :type registry: pyramid.registry.Registry
-        :type queue_name: string
-        :type clear: bool
-        :type disabled_tasks: set
-        """
+    def __init__(
+            self,
+            registry: Registry,
+            queue_name='pcelery.default',
+            clear=True,
+            disabled_tasks: Optional[set[str]] = None,
+    ):
         self.registry = registry
         self._queue_name = queue_name
         if queue_name in Channel.queues and clear:
@@ -57,9 +60,10 @@ class TasksQueue(object):
     def _run(self, payload, ignore_errors=False):
         message = Message(payload, self._channel)
         req = Request(message, app=self.registry.celery)
-        exc_info = req.execute()
+        exc_info: ExceptionInfo = req.execute()
         if exc_info and not ignore_errors:
-            raise exc_info.exception
+            exc_w_tb = exc_info.exception
+            raise exc_w_tb.exc
         return exc_info
 
     def get_count_by_name(self, name):

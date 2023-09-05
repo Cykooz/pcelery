@@ -48,12 +48,9 @@ def app_config_fixture():
 
 @pytest.fixture(name='pyramid_request')
 def pyramid_request_fixture(app_config):
-    """
-    :rtype: pyramid.request.Request
-    """
     registry = app_config.registry
     request_factory = registry.queryUtility(IRequestFactory, default=Request)
-    request = request_factory.blank('http://localhost')
+    request: Request = request_factory.blank('http://localhost')
     request.registry = registry
     apply_request_extensions(request)
     # create pyramid root

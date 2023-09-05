@@ -5,7 +5,7 @@
 """
 
 
-class RouterByRoutingKey(object):
+class RouterByRoutingKey:
     """Routes tasks by it routing_key only.
 
     Usage:

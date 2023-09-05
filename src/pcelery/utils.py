@@ -1,20 +1,16 @@
 """Get Celery instance from Pyramid configuration."""
-from __future__ import absolute_import
-
 from copy import deepcopy
 
 from celery import Celery, Task
 from kombu import Exchange, Queue
+from pyramid.registry import Registry
 
 from .base_task import PyramidCeleryTask
 from .interfaces import ICeleryQueuesFactory
 
 
-def _get_celery_config(registry):
-    """Load Celery configuration from settings.
-    :type registry: pyramid.registry.Registry
-    :rtype: dict
-    """
+def _get_celery_config(registry: Registry) -> dict:
+    """Load Celery configuration from settings."""
     celery_config = registry.pop('pcelery_config', {})
     celery_config = deepcopy(celery_config)
 
@@ -43,12 +39,16 @@ def _get_celery_config(registry):
             'worker_send_task_events': False,
             'worker_pool': 'solo',
             'worker_concurrency': 1,
-            # Sets only one default queue that will be receive all messages.
+            # Sets only one default queue that will receive all messages.
             'task_default_exchange': 'pcelery.default',
             'task_default_queue': 'pcelery.default',
             'task_default_routing_key': '',
             'task_queues': [
-                Queue('pcelery.default', Exchange('pcelery.default', type='topic'), routing_key='*'),
+                Queue(
+                    'pcelery.default',
+                    Exchange('pcelery.default', type='topic'),
+                    routing_key='*'
+                ),
             ],
         }
     else:
@@ -87,7 +87,7 @@ def get_celery(registry):
     return celery
 
 
-class TaskProxy(object):
+class TaskProxy:
     """Late-bind Celery tasks to decorated functions.
 
     Normally ``celery.task()`` binds everything during import time.
@@ -108,7 +108,10 @@ class TaskProxy(object):
         self.__name__ = self.original_func.__name__
 
     def __str__(self):
-        return 'TaskProxy for {} bound to task {}'.format(self.original_func, self.celery_task)
+        return (
+            f'TaskProxy for {self.original_func} bound to '
+            f'task {self.celery_task}'
+        )
 
     def __repr__(self):
         return self.__str__()
@@ -117,8 +120,8 @@ class TaskProxy(object):
         if not self.celery_task:
             raise RuntimeError(
                 'Celery task creation failed. Did config.scan() do '
-                'a sweep on {}? TaskProxy tried to look up attribute: {}'.format(
-                    self.original_func, '__call__')
+                f'a sweep on {self.original_func}? TaskProxy tried '
+                'to look up attribute: __call__'
             )
         return self.celery_task(*args, **kwargs)
 
@@ -137,8 +140,8 @@ class TaskProxy(object):
         if not self.celery_task:
             raise RuntimeError(
                 'Celery task creation failed. Did config.scan() do '
-                'a sweep on {}? TaskProxy tried to look up attribute: {}'.format(
-                    self.name, item)
+                f'a sweep on {self.name}? TaskProxy tried '
+                f'to look up attribute: {item}'
             )
 
         return getattr(self.celery_task, item)

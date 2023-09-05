@@ -3,8 +3,6 @@
 :Authors: cykooz
 :Date: 03.08.2017
 """
-from __future__ import absolute_import
-
 import re
 from copy import deepcopy
 
