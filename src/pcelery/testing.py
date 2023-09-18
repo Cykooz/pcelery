@@ -6,7 +6,7 @@
 from collections import deque
 from typing import Optional
 
-from billiard.einfo import ExceptionInfo
+from billiard.einfo import ExceptionInfo, ExceptionWithTraceback
 from celery.worker.request import Request
 from kombu.transport.memory import Channel
 from kombu.transport.virtual import Message
@@ -62,8 +62,9 @@ class TasksQueue:
         req = Request(message, app=self.registry.celery)
         exc_info: ExceptionInfo = req.execute()
         if exc_info and not ignore_errors:
-            exc_w_tb = exc_info.exception
-            raise exc_w_tb.exc
+            if isinstance(exc_info.exception, ExceptionWithTraceback):
+                raise exc_info.exception.exc
+            raise exc_info.exception
         return exc_info
 
     def get_count_by_name(self, name):

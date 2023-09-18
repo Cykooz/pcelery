@@ -14,6 +14,14 @@
 CHANGELOG
 *********
 
+Next release
+============
+
+Bug Fixes
+---------
+
+- Fixed testing utility ``TasksQueue``.
+
 1.0 (2023-09-05)
 ================
 
