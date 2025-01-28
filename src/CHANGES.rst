@@ -14,6 +14,15 @@
 CHANGELOG
 *********
 
+Next release
+============
+
+Features
+--------
+
+- Added argument ``only_current`` into methods ``TasksQueue.run_tasks_by_name`` and
+  ``TasksQueue.run_all_tasks``.
+
 1.1 (2025-01-28)
 ================
 

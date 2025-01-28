@@ -115,7 +115,7 @@ class TasksQueue:
                     del queue[i]
                     return self._run(payload, ignore_errors)
 
-    def run_tasks_by_name(self, name, ignore_errors=False, max_retries=0):
+    def run_tasks_by_name(self, name, ignore_errors=False, max_retries=0, only_current=False):
         retries = 0
         count = self.get_count_by_name(name)
         while count:
@@ -126,9 +126,12 @@ class TasksQueue:
                     if max_retries <= retries:
                         raise
                     retries += 1
-            count = self.get_count_by_name(name)
+            if only_current:
+                count = 0
+            else:
+                count = self.get_count_by_name(name)
 
-    def run_all_tasks(self, ignore_errors=False, max_retries=0):
+    def run_all_tasks(self, ignore_errors=False, max_retries=0, only_current=False):
         retries = 0
         count = len(self.queue)
         while count > 0:
@@ -139,7 +142,10 @@ class TasksQueue:
                     if max_retries <= retries:
                         raise
                     retries += 1
-            count = len(self.queue)
+            if only_current:
+                count = 0
+            else:
+                count = len(self.queue)
 
     def clear(self):
         self.queue.clear()

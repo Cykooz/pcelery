@@ -98,3 +98,36 @@ def test_tasks_queue_retry(pyramid_request):
     tasks_queue.run_all_tasks(max_retries=100)
     assert tasks_queue.get_count_by_name(first_task.name) == 0
     assert registry.first_task_runs == 3
+
+
+@task(bind=True)
+def order_task_1(self):
+    request = self.pyramid_request
+    request.registry.tasks_order.append(1)
+
+@task(bind=True)
+def order_task_2(self):
+    request = self.pyramid_request
+    request.registry.tasks_order.append(2)
+
+
+@task(bind=True)
+def order_task_master(self):
+    request = self.pyramid_request
+    request.registry.tasks_order.append(0)
+    order_task_1.delay()
+    order_task_2.delay()
+
+def test_tasks_order(pyramid_request):
+    registry = pyramid_request.registry
+    registry.tasks_order = []
+    tasks_queue = TasksQueue(registry)
+    order_task_1.delay()
+    order_task_2.delay()
+    tasks_queue.run_all_tasks()
+    assert registry.tasks_order == [1, 2]
+
+    registry.tasks_order.clear()
+    order_task_master.delay()
+    tasks_queue.run_all_tasks()
+    assert registry.tasks_order == [0, 1, 2]
