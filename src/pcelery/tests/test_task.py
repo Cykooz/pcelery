@@ -7,8 +7,10 @@ import sys
 from contextlib import contextmanager
 from io import StringIO
 from pathlib import Path
+from typing import Optional
 
 import pytest
+from celery.exceptions import Retry
 from pyramid.threadlocal import get_current_request
 
 from .. import task
@@ -16,9 +18,16 @@ from ..commands import pcelery
 from ..testing import TasksQueue
 
 
-@task(bind=True)
-def first_task(self, request_id):
+@task(bind=True, max_retries=100)
+def first_task(self, request_id, retry=0, dont_retry_after: Optional[int] = None):
     request = self.pyramid_request
+    if retry > 0:
+        registry = request.registry
+        if not hasattr(registry, 'first_task_runs'):
+            registry.first_task_runs = 0
+        if not dont_retry_after or dont_retry_after > registry.first_task_runs:
+            registry.first_task_runs += 1
+            raise self.retry(countdown=retry)
     if self.request.called_directly:
         assert id(request) == request_id
     else:
@@ -62,4 +71,30 @@ def test_cli_command():
     sys.argv.extend(old_argv)
 
     assert exc_info.value.args[0] == 0
-    assert std_out.getvalue().strip() == '5.3.4 (emerald-rush)'
+    assert std_out.getvalue().strip() == '5.4.0 (opalescent)'
+
+
+def test_tasks_queue_retry(pyramid_request):
+    cur_request_id = id(get_current_request())
+    registry = pyramid_request.registry
+
+    tasks_queue = TasksQueue(pyramid_request.registry)
+    first_task.delay(cur_request_id, retry=1)
+    assert tasks_queue.get_count_by_name(first_task.name) == 1
+    with pytest.raises(Retry):
+        tasks_queue.run_all_tasks()
+    assert tasks_queue.get_count_by_name(first_task.name) == 1
+    assert registry.first_task_runs == 1
+
+    registry.first_task_runs = 0
+    with pytest.raises(Retry):
+        tasks_queue.run_all_tasks(max_retries=2)
+    assert tasks_queue.get_count_by_name(first_task.name) == 1
+    assert registry.first_task_runs == 3
+
+    tasks_queue.clear()
+    first_task.delay(cur_request_id, retry=1, dont_retry_after=3)
+    assert tasks_queue.get_count_by_name(first_task.name) == 1
+    tasks_queue.run_all_tasks(max_retries=100)
+    assert tasks_queue.get_count_by_name(first_task.name) == 0
+    assert registry.first_task_runs == 3

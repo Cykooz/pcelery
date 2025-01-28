@@ -7,6 +7,7 @@ from collections import deque
 from typing import Optional
 
 from billiard.einfo import ExceptionInfo, ExceptionWithTraceback
+from celery.exceptions import Retry
 from celery.worker.request import Request
 from kombu.transport.memory import Channel
 from kombu.transport.virtual import Message
@@ -114,18 +115,30 @@ class TasksQueue:
                     del queue[i]
                     return self._run(payload, ignore_errors)
 
-    def run_tasks_by_name(self, name, ignore_errors=False):
+    def run_tasks_by_name(self, name, ignore_errors=False, max_retries=0):
+        retries = 0
         count = self.get_count_by_name(name)
         while count:
             for _ in range(count):
-                self.run_oldest_task(name, ignore_errors)
+                try:
+                    self.run_oldest_task(name, ignore_errors)
+                except Retry:
+                    if max_retries <= retries:
+                        raise
+                    retries += 1
             count = self.get_count_by_name(name)
 
-    def run_all_tasks(self, ignore_errors=False):
+    def run_all_tasks(self, ignore_errors=False, max_retries=0):
+        retries = 0
         count = len(self.queue)
         while count > 0:
             for _ in range(count):
-                self.run_oldest_task(ignore_errors=ignore_errors)
+                try:
+                    self.run_oldest_task(ignore_errors=ignore_errors)
+                except Retry:
+                    if max_retries <= retries:
+                        raise
+                    retries += 1
             count = len(self.queue)
 
     def clear(self):

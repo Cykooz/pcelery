@@ -14,6 +14,15 @@
 CHANGELOG
 *********
 
+Next release
+============
+
+Features
+--------
+
+- Added argument ``max_retries`` into methods ``TasksQueue.run_tasks_by_name`` and
+  ``TasksQueue.run_all_tasks`.
+
 1.0.2 (2023-09-18)
 ==================
 
