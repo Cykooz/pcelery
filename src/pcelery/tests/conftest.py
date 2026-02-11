@@ -3,6 +3,7 @@
 :Authors: cykooz
 :Date: 29.08.2017
 """
+
 import pytest
 from pyramid import testing
 from pyramid.config import Configurator
@@ -17,16 +18,12 @@ def simple_app(global_config, **settings):
     """This function returns a Pyramid WSGI application."""
     config = Configurator(settings=settings)
     config.include('pcelery')
-    config.set_celery_config({
-        'testing': True,
-    })
+    config.set_celery_config({'testing': True})
     return config.make_wsgi_app()
 
 
 def create_app_env():
-    settings = {
-        'testing': True
-    }
+    settings = {'testing': True}
     wsgi_app = simple_app({}, **settings)
     env = prepare()
     env['app'] = wsgi_app
@@ -39,9 +36,7 @@ def app_config_fixture():
     request = Request.blank('http://localhost')
     with testing.testConfig(request=request, settings=settings) as config:
         config.include('pcelery')
-        config.set_celery_config({
-            'testing': True,
-        })
+        config.set_celery_config({'testing': True})
         config.scan()
         yield config
 
@@ -54,7 +49,9 @@ def pyramid_request_fixture(app_config):
     request.registry = registry
     apply_request_extensions(request)
     # create pyramid root
-    root_factory = request.registry.queryUtility(IRootFactory, default=DefaultRootFactory)
+    root_factory = request.registry.queryUtility(
+        IRootFactory, default=DefaultRootFactory
+    )
     root = root_factory(request)  # Initialise pyramid root
     if hasattr(root, 'set_request'):
         root.set_request(request)

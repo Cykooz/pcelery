@@ -59,4 +59,5 @@ ENV/
 
 .*
 !/.gitignore
+!/.ruff\.toml
 RELEASE-VERSION

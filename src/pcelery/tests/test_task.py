@@ -3,6 +3,7 @@
 :Authors: cykooz
 :Date: 29.08.2017
 """
+
 import sys
 from contextlib import contextmanager
 from io import StringIO
@@ -71,7 +72,7 @@ def test_cli_command():
     sys.argv.extend(old_argv)
 
     assert exc_info.value.args[0] == 0
-    assert std_out.getvalue().strip() == '5.4.0 (opalescent)'
+    assert std_out.getvalue().strip() == '5.6.2 (recovery)'
 
 
 def test_tasks_queue_retry(pyramid_request):
@@ -105,6 +106,7 @@ def order_task_1(self):
     request = self.pyramid_request
     request.registry.tasks_order.append(1)
 
+
 @task(bind=True)
 def order_task_2(self):
     request = self.pyramid_request
@@ -117,6 +119,7 @@ def order_task_master(self):
     request.registry.tasks_order.append(0)
     order_task_1.delay()
     order_task_2.delay()
+
 
 def test_tasks_order(pyramid_request):
     registry = pyramid_request.registry

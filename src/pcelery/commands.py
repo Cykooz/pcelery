@@ -3,6 +3,7 @@
 :Authors: cykooz
 :Date: 25.01.2017
 """
+
 import argparse
 import os
 import sys
@@ -21,7 +22,7 @@ def pcelery(args=None):
     if args is None:
         args = argv[1:]
 
-    parser = argparse.ArgumentParser(description="Execute celery command")
+    parser = argparse.ArgumentParser(description='Execute celery command')
     parser.add_argument(
         '--ini',
         required=True,
@@ -31,7 +32,7 @@ def pcelery(args=None):
         '--setup',
         dest='setup',
         help='A callable that will be passed the environment '
-             'before it is made available to the celery.'
+        'before it is made available to the celery.',
     )
     parsed_args, unknown_args = parser.parse_known_args(args)
     config_uri = parsed_args.ini

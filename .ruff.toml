@@ -1,0 +1,14 @@
+line-length = 88
+indent-width = 4
+# The minimum Python version that should be supported
+target-version = "py312"
+
+
+[format]
+# Use single quotes for non-triple-quoted strings.
+quote-style = "single"
+
+
+[lint]
+# Disable fix for unused imports (`F401`) and unused variables (`F841`).
+unfixable = ["F401", "F841"]

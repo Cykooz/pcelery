@@ -3,8 +3,9 @@
 :Authors: cykooz
 :Date: 19.03.2017
 """
+
 from collections import deque
-from typing import Optional
+from typing import Optional, Any
 
 from billiard.einfo import ExceptionInfo, ExceptionWithTraceback
 from celery.exceptions import Retry
@@ -15,13 +16,12 @@ from pyramid.registry import Registry
 
 
 class TasksQueue:
-
     def __init__(
-            self,
-            registry: Registry,
-            queue_name='pcelery.default',
-            clear=True,
-            disabled_tasks: Optional[set[str]] = None,
+        self,
+        registry: Registry,
+        queue_name='pcelery.default',
+        clear=True,
+        disabled_tasks: Optional[set[str]] = None,
     ):
         self.registry = registry
         self._queue_name = queue_name
@@ -52,7 +52,9 @@ class TasksQueue:
     def __getitem__(self, key) -> Message:
         if not self._channel:
             raise KeyError(key)
-        queue = [m for m in self.queue if m['headers']['task'] not in self.disabled_tasks]
+        queue = [
+            m for m in self.queue if m['headers']['task'] not in self.disabled_tasks
+        ]
         return Message(queue[key], self._channel)
 
     def __contains__(self, item):
@@ -61,8 +63,8 @@ class TasksQueue:
     def _run(self, payload, ignore_errors=False):
         message = Message(payload, self._channel)
         req = Request(message, app=self.registry.celery)
-        exc_info: ExceptionInfo = req.execute()
-        if exc_info and not ignore_errors:
+        exc_info: ExceptionInfo | Any = req.execute()
+        if exc_info and not ignore_errors and isinstance(exc_info, ExceptionInfo):
             if isinstance(exc_info.exception, ExceptionWithTraceback):
                 raise exc_info.exception.exc
             raise exc_info.exception
@@ -115,7 +117,13 @@ class TasksQueue:
                     del queue[i]
                     return self._run(payload, ignore_errors)
 
-    def run_tasks_by_name(self, name, ignore_errors=False, max_retries=0, only_current=False):
+    def run_tasks_by_name(
+        self,
+        name,
+        ignore_errors=False,
+        max_retries=0,
+        only_current=False,
+    ):
         retries = 0
         count = self.get_count_by_name(name)
         while count:

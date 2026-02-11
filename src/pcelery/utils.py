@@ -1,4 +1,5 @@
 """Get Celery instance from Pyramid configuration."""
+
 from copy import deepcopy
 
 from celery import Celery, Task
@@ -34,7 +35,6 @@ def _get_celery_config(registry: Registry) -> dict:
             'event_queue_expires': 15,
             'enable_utc': True,
             'timezone': 'UTC',
-
             # Special for testing
             'worker_send_task_events': False,
             'worker_pool': 'solo',
@@ -47,7 +47,7 @@ def _get_celery_config(registry: Registry) -> dict:
                 Queue(
                     'pcelery.default',
                     Exchange('pcelery.default', type='topic'),
-                    routing_key='*'
+                    routing_key='*',
                 ),
             ],
         }
@@ -78,7 +78,7 @@ def get_celery(registry):
         celery = registry.celery = Celery(
             app_name,
             task_cls=task_cls,
-            loader='pcelery.loader:PyramidCeleryLoader'
+            loader='pcelery.loader:PyramidCeleryLoader',
         )
         celery.config_from_object(config)
         # Expose Pyramid registry to Celery app and tasks
@@ -108,10 +108,7 @@ class TaskProxy:
         self.__name__ = self.original_func.__name__
 
     def __str__(self):
-        return (
-            f'TaskProxy for {self.original_func} bound to '
-            f'task {self.celery_task}'
-        )
+        return f'TaskProxy for {self.original_func} bound to task {self.celery_task}'
 
     def __repr__(self):
         return self.__str__()

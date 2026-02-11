@@ -3,6 +3,7 @@
 :Authors: cykooz
 :Date: 14.11.2016
 """
+
 from typing import Optional
 
 from celery import Task as BaseTask
@@ -19,13 +20,14 @@ EXTRA_PARAMS_NAME = 'pcelery.extra'
 
 
 class PyramidCeleryTask(BaseTask):
-
     def _call_directly(self, *args, **kwargs):
         # Emulate BaseTask.__call__()
         push_current_task(self)
         self.push_request(args=args, kwargs=kwargs)
         try:
-            request = get_current_request()  # TODO: fix it - replace to explicitly passed keyword argument
+            request = (
+                get_current_request()
+            )  # TODO: fix it - replace to explicitly passed keyword argument
             self.request.pyramid_request = request
             return self.run(*args, **kwargs)
         finally:
@@ -69,8 +71,7 @@ class PyramidCeleryTask(BaseTask):
         if not hasattr(request, 'root'):
             # It is not real worker, most likely it is testing environment
             root_factory = self.pyramid_registry.queryUtility(
-                IRootFactory,
-                default=DefaultRootFactory
+                IRootFactory, default=DefaultRootFactory
             )
             request.root = root_factory(request)
         return request
@@ -79,7 +80,8 @@ class PyramidCeleryTask(BaseTask):
 @before_task_publish.connect
 def add_params_to_task(sender=None, body=None, **kwargs):
     if isinstance(body, tuple):
-        embed = body[2]  # http://docs.celeryproject.org/en/latest/internals/protocol.html#definition
+        # http://docs.celeryproject.org/en/latest/internals/protocol.html#definition
+        embed = body[2]
         request = get_current_request()
         extra = {
             'http_request': serialize_request(request),
@@ -88,11 +90,7 @@ def add_params_to_task(sender=None, body=None, **kwargs):
 
 
 def serialize_request(request: Request) -> dict:
-    env = {
-        key: value
-        for key, value in request.environ.items()
-        if key.isupper()
-    }
+    env = {key: value for key, value in request.environ.items() if key.isupper()}
     if 'CONTENT_LENGTH' in env:
         env['CONTENT_LENGTH'] = '0'
     data = {
@@ -103,9 +101,9 @@ def serialize_request(request: Request) -> dict:
 
 
 def deserialize_request(
-        data: dict,
-        registry: Registry,
-        default_url='http://localhost'
+    data: dict,
+    registry: Registry,
+    default_url='http://localhost',
 ) -> Request:
     if data:
         url = data['REQUEST_URL']
