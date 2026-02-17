@@ -14,6 +14,14 @@
 CHANGELOG
 *********
 
+Next release
+============
+
+Features
+--------
+
+- Added ``add_celery_tasks_alt_name_factory`` function.
+
 1.3 (2026-02-11)
 ================
 

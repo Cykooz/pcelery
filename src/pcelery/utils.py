@@ -63,7 +63,7 @@ def _get_celery_config(registry: Registry) -> dict:
     return celery_config
 
 
-def get_celery(registry):
+def get_celery(registry) -> Celery:
     """Load and configure Celery app.
 
     Cache the loaded Celery app object on registry.

@@ -6,14 +6,18 @@
 
 import re
 from copy import deepcopy
+from typing import Callable, Optional, Type
 
 import venusian
+from celery import Task
+from pyramid.config import Configurator
+from pyramid.registry import Registry
 
 from .interfaces import ICeleryQueuesFactory
 from .utils import TaskProxy, get_celery
 
 
-def includeme(config):
+def includeme(config: Configurator):
     config.add_directive('add_celery_queues_factory', add_celery_queues_factory)
     config.add_directive('set_celery_config', set_celery_config)
     ignore = [
@@ -25,32 +29,37 @@ def includeme(config):
     config.scan(ignore=ignore)
 
 
-def add_celery_queues_factory(config, factory, name=None):
-    """This function registers a utility that creates celery queues.
-    :type config: pyramid.config.Configurator
-    :type factory: object
-    :type name: string
-    """
+def add_celery_queues_factory(
+    config: Configurator,
+    factory: Callable[[Registry], list],
+    name: Optional[str] = None,
+):
+    """This function registers a utility that creates celery queues."""
     name = name or factory.__name__
     config.registry.registerUtility(factory, ICeleryQueuesFactory, name=name)
 
 
-def set_celery_config(config, celery_config):
-    """This function storing a celery configuration in the pyramid registry.
-    :type config: pyramid.config.Configurator
-    :type celery_config: dict
-    """
+def set_celery_config(config: Configurator, celery_config: dict):
+    """This function storing a celery configuration in the pyramid registry."""
     config.registry['pcelery_config'] = deepcopy(celery_config)
 
 
-def task(*args, **kwargs):
+def add_celery_tasks_alt_name_factory(
+    config: Configurator,
+    name_factory: Callable[[Type[Task]], Optional[str]],
+):
+    """This function storing a celery configuration in the pyramid registry."""
+    factories = config.registry.setdefault('pcelery_alt_name_factories', [])
+    factories.append(name_factory)
+
+
+def task(**kwargs):
     """Configuration compatible task decorator.
 
     Tasks are picked up by :py:meth:`pyramid.config.Configurator.scan`
     run on the module, not during import time.
     Otherwise we mimic the behavior of :py:meth:`celery.Celery.task`.
 
-    :param args: Passed to Celery task decorator
     :param kwargs: Passed to Celery task decorator
     """
 
@@ -63,7 +72,13 @@ def task(*args, **kwargs):
             def register():
                 registry = config.registry
                 celery = get_celery(registry)
-                celery_task = celery.task(task_proxy.original_func, *args, **kwargs)
+                celery_task = celery.task(task_proxy.original_func, **kwargs)
+                if alt_name_factories := config.registry.get(
+                    'pcelery_alt_name_factories', None
+                ):
+                    for alt_name_factory in alt_name_factories:
+                        if alt_name := alt_name_factory(celery_task):
+                            celery.tasks[alt_name] = celery_task
                 proxy.bind_celery_task(celery_task)
 
             config.action('bind_celery_task - %s' % name, register)

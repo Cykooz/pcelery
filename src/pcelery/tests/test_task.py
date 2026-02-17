@@ -8,13 +8,16 @@ import sys
 from contextlib import contextmanager
 from io import StringIO
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Type
+from pyramid import testing
 
 import pytest
+from celery import Task
 from celery.exceptions import Retry
+from pyramid.request import Request
 from pyramid.threadlocal import get_current_request
 
-from .. import task
+from .. import task, add_celery_tasks_alt_name_factory, get_celery
 from ..commands import pcelery
 from ..testing import TasksQueue
 
@@ -134,3 +137,21 @@ def test_tasks_order(pyramid_request):
     order_task_master.delay()
     tasks_queue.run_all_tasks()
     assert registry.tasks_order == [0, 1, 2]
+
+
+def alt_task_name(task_class: Type[Task]) -> Optional[str]:
+    if task_class.name.endswith('.first_task'):
+        return 'renamed.first_task'
+    return None
+
+
+def test_alt_task_name():
+    settings = {}
+    request = Request.blank('http://localhost')
+    with testing.testConfig(request=request, settings=settings) as config:
+        config.include('pcelery')
+        config.set_celery_config({'testing': True})
+        add_celery_tasks_alt_name_factory(config, alt_task_name)
+        config.scan()
+        celery = get_celery(config.registry)
+        assert celery.tasks['renamed.first_task'].name == first_task.name
