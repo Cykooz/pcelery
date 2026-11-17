@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 :Authors: cykooz
 :Date: 29.08.2017
@@ -9,15 +8,15 @@ from contextlib import contextmanager
 from io import StringIO
 from pathlib import Path
 from typing import Optional, Type
-from pyramid import testing
 
 import pytest
 from celery import Task
 from celery.exceptions import Retry
+from pyramid import testing
 from pyramid.request import Request
 from pyramid.threadlocal import get_current_request
 
-from .. import task, add_celery_tasks_alt_name_factory, get_celery
+from .. import add_celery_tasks_alt_name_factory, get_celery, task
 from ..commands import pcelery
 from ..testing import TasksQueue
 
@@ -75,7 +74,7 @@ def test_cli_command():
     sys.argv.extend(old_argv)
 
     assert exc_info.value.args[0] == 0
-    assert std_out.getvalue().strip() == '5.6.2 (recovery)'
+    assert std_out.getvalue().strip() == '5.7.0 (collider)'
 
 
 def test_tasks_queue_retry(pyramid_request):

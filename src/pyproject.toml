@@ -1,0 +1,79 @@
+[build-system]
+requires = [
+    "setuptools == 84.2.1",
+    "pkg-resources-backport == 1.0.1",
+]
+build-backend = "setuptools.build_meta"
+
+
+[tool.setuptools.dynamic]
+version = { attr = "version.__version__" }
+readme = { file = ["README.rst", "CHANGES.rst"] }
+
+
+[project]
+name = "pcelery"
+dynamic = ["version", "readme"]
+description = "Celery integration with Pyramid."
+authors = [
+    { name = "Kirill Kuzminykh", email = "cykooz@gmail.com" }
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Framework :: Pyramid",
+    "Topic :: Software Development :: Object Brokering",
+    "Topic :: System :: Distributed Computing",
+]
+requires-python = ">=3.12"
+dependencies = [
+    "setuptools<82.0.0", # pyramid 2.1 requires 'setuptools<82'
+    "celery>=5.3.4",
+    "pyramid>=2.0.2",
+    "venusian",
+    "kombu",
+    "billiard",
+    "zope.interface",
+]
+
+
+[project.urls]
+Homepage = "https://github.com/Cykooz/pcelery"
+Repository = "https://github.com/Cykooz/pcelery.git"
+
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+]
+
+
+[project.scripts]
+pcelery = "pcelery.commands:pcelery"
+pcelery_test = "pcelery.runtests:runtests [test]"
+
+
+[project.entry-points."paste.app_factory"]
+main = "pcelery.tests.conftest:simple_app [test]"
+
+
+[tool.pytest]
+minversion = "9.0"
+addopts = ["--pyargs", "--doctest-modules", "--doctest-ignore-import-errors"]
+markers = ["now"]
+python_files = ["tests.py", "test_*.py"]
+doctest_optionflags = [
+    "NORMALIZE_WHITESPACE",
+    "IGNORE_EXCEPTION_DETAIL",
+    "ALLOW_UNICODE",
+    "ELLIPSIS",
+]
+#filterwarnings = ["ignore::DeprecationWarning"]

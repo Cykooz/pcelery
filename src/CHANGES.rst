@@ -14,6 +14,15 @@
 CHANGELOG
 *********
 
+Next release
+============
+
+Changes
+-------
+
+- Updated all dependencies.
+- The project was moved to use ``pyproject.toml`` instead of ``setup.py``.
+
 1.4 (2026-02-17)
 ================
 

@@ -1,5 +1,5 @@
 """
-:Version: 1.5.0
+:Version: 1.7.0
 
 Look for the latest version of the script in the GIST:
 https://gist.github.com/Cykooz/118fba100c9ceb76ee822f7541d480c4
@@ -17,14 +17,10 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from urllib.request import urlopen
 
-
-BUILDOUT_VERSION = '5.1.1'
-PIP_VERSION = '25.3.0'
-# Note from zc.buildout CHANGES.rst
-# > Require setuptools<81.
-# > We need the pkg_resources module which is scheduled for removal in 81 (#81).
-SETUPTOOLS_VERSION = '80.9.0'
-WHEEL_VERSION = '0.45.1'
+BUILDOUT_VERSION = '6.1.0'
+PIP_VERSION = '26.3'
+SETUPTOOLS_VERSION = '84.2.1'
+WHEEL_VERSION = '0.48.0'
 
 GET_PIP_URL = 'https://bootstrap.pypa.io/get-pip.py'
 
@@ -40,22 +36,22 @@ def main():
     parser.add_argument(
         '--buildout_version',
         default=BUILDOUT_VERSION,
-        help='Version of zc.buildout (default: %(default)).',
+        help='Version of zc.buildout (default: %(default)s).',
     )
     parser.add_argument(
         '--pip_version',
         default=PIP_VERSION,
-        help='Version of pip (default: %(default)).',
+        help='Version of pip (default: %(default)s).',
     )
     parser.add_argument(
         '--setuptools_version',
         default=SETUPTOOLS_VERSION,
-        help='Version of setuptools (default: %(default)).',
+        help='Version of setuptools (default: %(default)s).',
     )
     parser.add_argument(
         '--wheel_version',
         default=WHEEL_VERSION,
-        help='Version of wheel (default: %(default)).',
+        help='Version of wheel (default: %(default)s).',
     )
 
     args = parser.parse_args(sys.argv[1:])
